@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Paciente {
@@ -48,7 +49,29 @@ public class Paciente {
 		String fechaNacimiento = sc.nextLine();
 		System.out.println("Telefono : ");
 		String telefono = sc.nextLine();
+		System.out.println("#######################");
+		System.out.println("FICHA MEDICA");
+		System.out.println("#######################");
 		
+		ArrayList<Tratamiento> listaTratamiento = new ArrayList<Tratamiento>();
+		System.out.println("Tiene Tratamientos Realizados");
+		System.out.println("1 - SI");
+		System.out.println("2 - NO");
+		int agregarTratamiento = sc.nextInt();
+		sc.nextLine();
+		while(agregarTratamiento == 1) 
+		{
+			System.out.println("Tratamiento");
+			String tratamiento = sc.nextLine();
+			System.out.println("Fecha");
+			String fecha = sc.nextLine();
+			Tratamiento Objecttratamiento = new Tratamiento(tratamiento,fecha);
+			listaTratamiento.add(Objecttratamiento);
+			System.out.println("Desea ingresar mas tratamiento");
+			System.out.println("1 - SI");
+			System.out.println("2 - NO");
+			agregarTratamiento = sc.nextInt();
+		}
 		try {
 			Statement statement = conexion.createStatement();
 			String sql = "SELECT idpersona FROM persona order by idPersona DESC LIMIT 1;";
@@ -77,7 +100,7 @@ public class Paciente {
         	
         	Statement statementPaciente = conexion.createStatement();
 			sql = "SELECT idpaciente FROM paciente order by idpaciente DESC LIMIT 1;";
-			rs = statement.executeQuery(sql);
+			rs = statementPaciente.executeQuery(sql);
 			int idpaciente = 0;
 			while(rs.next()) 
 			{
@@ -90,7 +113,31 @@ public class Paciente {
         	response = stmtpaciente.executeUpdate();
         	if(response>0) 
         	{
-        		System.out.println("se inserto correctamente");
+        		System.out.println("se inserto paciente correctamente");
+        	}
+        	if(listaTratamiento.size()>0) 
+        	{
+        		Statement statementFichaMedica = conexion.createStatement();
+    			sql = "SELECT idFichaMedica FROM fichamedica order by idFichaMedica DESC LIMIT 1;";
+    			rs = statementFichaMedica.executeQuery(sql);
+    			int idFichaMedica = 0;
+    			while(rs.next()) 
+    			{
+    				idFichaMedica = rs.getInt("idFichaMedica");
+    			}
+    			idFichaMedica = idFichaMedica+1;
+    			for(int i=0;i<listaTratamiento.size();i++) {
+    				PreparedStatement stmtFichaMedica = conexion.prepareStatement("INSERT INTO fichamedica VALUES (?,?,?,?)");
+    				stmtFichaMedica.setInt(1,idFichaMedica);
+    				stmtFichaMedica.setInt(2,idpaciente+1);
+    				stmtFichaMedica.setString(3,listaTratamiento.get(i).getNombre());
+    				stmtFichaMedica.setString(4,listaTratamiento.get(i).getFecha());
+    	        	response = stmtFichaMedica.executeUpdate();
+    	        	if (response > 0) {
+    	                System.out.println("Tratamiento Insertado correctamente");
+    	        	}
+    	        	idFichaMedica = idFichaMedica+1;
+    			}
         	}
 		}catch (SQLException sqle){
             System.out.println("SQLState: "+ sqle.getSQLState());
