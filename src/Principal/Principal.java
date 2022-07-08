@@ -2,6 +2,7 @@ package Principal;
 
 import java.util.Scanner;
 
+import Clinica.Turno;
 import Entidades.Odontologo;
 import Entidades.Paciente;
 import Utilidades.Conexion;
@@ -12,12 +13,13 @@ public class Principal {
 		// TODO Auto-generated method stub
 		Scanner sc = new Scanner(System.in);
 		Conexion cnn = new Conexion("drmuelas","root","Navidad$25");
-		//System.out.println(cnn.conectar());
+		System.out.println(cnn.conectar());
 		
 		System.out.println("##############");
 		System.out.println("Iniciar Sesion");
 		System.out.println("##############");
 		//Falta implementar
+		
 		int opcion;
 		do {
 			System.out.println("##############");
@@ -106,15 +108,37 @@ public class Principal {
 						System.out.println("2 - MOSTRAR TURNOS");
 						System.out.println("3 - ACTUALIZAR TURNO");
 						System.out.println("0 - Terminar");
-						int opcionPaciente = sc.nextInt();
+						int opcionturno = sc.nextInt();
+						switch (opcionturno) {
+							case 1: {
+								Turno turno = new Turno();
+								turno.crearTurnos(cnn.getConnection());
+								break;
+							}
+							case 2: {
+								Turno turno = new Turno();
+								turno.reservarTurno(cnn.getConnection());
+								break;
+							}
+							case 3: {
+								Turno turno = new Turno();
+								//turno.crearTurnos(cnn.getConnection());
+								break;
+							}
+							default:
+							throw new IllegalArgumentException("Unexpected value: " + opcionturno);
+						}
 						break;
 					}
 					default:
 						throw new IllegalArgumentException("Unexpected value: " + opcion);
 					}
+		System.out.println("##################");
+		System.out.println("¿Cierra el Sistema?");
+		System.out.println("0 - SI");
+		System.out.println("1 - NO");
+		System.out.println("##################");
 		}while(opcion!=0);
-		
 		System.out.println("TERMINO EL DIA DE TRABAJO");
 	}
-
 }

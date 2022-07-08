@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -58,8 +60,8 @@ public class Turno {
 		int turno = 0 ;
 		try {
 			statement = conexion.createStatement();
-			sql = "SELECT idodontologo,Nombre,Apellido"
-					+ "Documento FROM odontologo AS odo INNER JOIN persona AS per ON odo.idpersona = per.idpersona"
+			sql = "SELECT idodontologo,Nombre,Apellido,Documento "
+					+ "FROM odontologo AS odo INNER JOIN persona AS per ON odo.idpersona = per.idpersona "
 					+ "order by idodontologo;";
 			rs = statement.executeQuery(sql);
 			System.out.println("Seleccione Odontologo");
@@ -75,8 +77,8 @@ public class Turno {
 			odontologo = sc.nextInt();
 			sc.nextLine();
 			System.out.println("##############################");
-			System.out.println("Ingrese Fecha para crear Turno");
-			String fecha = sc.nextLine();
+			//System.out.println("Ingrese Fecha para crear Turno");
+			//String fecha = sc.nextLine();
 			System.out.println("Ingrese Horario de Atencion");
 			System.out.println("1 - MAÑANA 8 a 13");
 			System.out.println("2 - TARDE 15 a 20");
@@ -121,6 +123,7 @@ public class Turno {
 								t = new Turno(fecha,1);
 								listaTurno.add(t);
 							};
+							System.out.println("Insertando Turno");
 							try {
 								statementTurno = conexion.createStatement();
 				    			sql = "SELECT idturno FROM turno order by idturno DESC LIMIT 1;";
@@ -130,19 +133,24 @@ public class Turno {
 				    			{
 				    				idturno = rs.getInt("idturno");
 				    			}
-				    			idturno = idturno +1;
+				    			//idturno = idturno + 1;
 				    			int response = 0;
+				    			PreparedStatement stmtTurno = null;
 								for(int i=0;i<listaTurno.size();i++) 
 								{
-									PreparedStatement stmtFichaMedica = conexion.prepareStatement("INSERT INTO turno VALUES (?,?,?,?)");
-				    				stmtFichaMedica.setInt(1,idturno);
-				    				stmtFichaMedica.setInt(2,odontologo);
-				    				stmtFichaMedica.setString(3,listaTurno.get(i).fecha);
-				    	        	response = stmtFichaMedica.executeUpdate();
+									System.out.println("##########");
+									System.out.println(idturno);
+									System.out.println(odontologo);
+									System.out.println(listaTurno.get(i).fecha);
+									stmtTurno = conexion.prepareStatement("INSERT IGNORE INTO turno (idturno,Fecha,idodontologo) VALUES (?,?,?)");
+									stmtTurno.setInt(1,idturno + 1);
+									stmtTurno.setString(2,listaTurno.get(i).fecha);
+									stmtTurno.setInt(3,odontologo);									
+				    	        	response = stmtTurno.executeUpdate();
 				    	        	if (response > 0) {
-				    	                System.out.println("Tratamiento Insertado correctamente");
+				    	                System.out.println("Turno Insertado correctamente");
 				    	        	}
-				    	        	idturno = idturno+1;
+				    	        	idturno = idturno + 1;
 								};
 							}catch (SQLException sqle){
 					            System.out.println("SQLState: "+ sqle.getSQLState());
@@ -227,25 +235,55 @@ public class Turno {
 		String sql;
 		ResultSet rs;
 		PreparedStatement stmt;
-		int paciente = 0;
-		System.out.println("Reserva de Turno");
-		System.out.println("Ingrese el numero de documento del Paciente");
-		String documento = sc.nextLine();
 		try {
+			System.out.println("#################");
+			System.out.println("TURNO DISPONIBLES");
+			System.out.println("#################");
+			
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		    String today = dtf.format(LocalDateTime.now());
+		    
+			statement = conexion.createStatement();
+			sql = "SELECT idturno,Nombre,Apellido"
+					+ "FROM turno AS t INNER JOIN odontologo AS odo ON t.idodontologo = odo.id "
+					+ "INNER JOIN persona ON odo.idpersona = per.idpersona"
+					+ "WHERE t.fecha like '"+today+"%' AND t.estado = 1";
+			rs = statement.executeQuery(sql);
+			int idturno = 0;
+			while(rs.next()) 
+			{
+				idturno = rs.getInt("idturno");
+				String apellido = rs.getString("Apellido");
+				String nombre = rs.getString("Nombre");
+				System.out.println(idturno + " - " + apellido + " " + nombre + " ");
+			}
+			
+			System.out.println("Reserva de Turno");
+			System.out.println("Ingrese el numero de documento del Paciente");
+			String documento = sc.nextLine();
 			statement = conexion.createStatement();
 			sql = "SELECT idpaciente,Nombre,Apellido"
 					+ "Documento FROM paciente AS odo INNER JOIN persona AS per ON odo.idpersona = per.idpersona"
 					+ "WHERE documento = "+documento;
 			rs = statement.executeQuery(sql);
+			int idpaciente = 0;
 			while(rs.next()) 
 			{
-				int idpaciente = rs.getInt("idpaciente");
+				idpaciente = rs.getInt("idpaciente");
 				String apellido = rs.getString("Apellido");
 				String nombre = rs.getString("Nombre");
 				System.out.println(idpaciente + " - " + apellido + " " + nombre + " ");
 			}
 			
-			
+			stmt = conexion.prepareStatement("UPDATE turno SET "
+					+ "idpersona=?"
+					+ "WHERE turno =?");
+        	stmt.setInt(1,idpaciente);
+        	int response = stmt.executeUpdate();
+        	if(response>0) 
+        	{
+        		System.out.println("se actualizo odotonlogo correctamente");
+        	}
 		}
 		catch (Exception e) {
 			// TODO: handle exception

@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import Clinica.Turno;
+import Utilidades.Conexion;
 
 public class TestTurno {
 	public static void main(String[] args) {
@@ -31,7 +32,7 @@ public class TestTurno {
 		fecha = sdf.format(date);
 		System.out.println(fecha);*/
 		
-		ArrayList<Turno> listaTurno = new ArrayList<Turno>();
+		/*ArrayList<Turno> listaTurno = new ArrayList<Turno>();
 		Calendar calendar = Calendar.getInstance();
 		Date date = new Date(22,6,2,15,0);
 		calendar.setTime(date);
@@ -56,6 +57,38 @@ public class TestTurno {
 		for(int i=0;i<listaTurno.size();i++) 
 		{
 			System.out.println("Turno: " + listaTurno.get(i).getFecha());
-		};
+		};*/
+		
+		/*Date date = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		String fecha = sdf.format(date);
+		System.out.println(date);
+		System.out.println(fecha);*/
+		
+		
+		Conexion cnn = new Conexion("drmuelas","root","Navidad$25");
+		
+		System.out.println(cnn.conectar());
+		
+		Turno turno = new Turno();
+		//turno.crearTurnos(cnn.getConnection());
+		turno.reservarTurno(cnn.getConnection());
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	}
 }
